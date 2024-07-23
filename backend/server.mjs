@@ -162,16 +162,182 @@
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Version 3
+// import express from 'express';
+// import cors from 'cors';
+// import weaviate from 'weaviate-ts-client';
+// import docenv from 'dotenv';
+//
+// docenv.config();
+//
+// const app = express();
+// app.use(cors());
+// app.use(express.json());
+//
+// // const weaviateApiKey = 'fjmSuapKusq6qLuzbg1xeEo2ucZzh9p7IdEX';
+// // const openAiApiKey = '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';
+//
+// const weaviateApiKey = process.env.WEAVIATE_API_KEY;
+// const openAiApiKey = process.env.OPENAI_API_KEY;
+//
+// const client = weaviate.client({
+//     scheme: 'https',
+//     host: 'zr63g5ynrcio2dfumhgp8g.c0.europe-west3.gcp.weaviate.cloud',
+//     apiKey: new weaviate.ApiKey(weaviateApiKey),
+//     headers: {
+//         'X-OpenAI-Api-Key': openAiApiKey,
+//     }
+// });
+//
+// app.post('/api/chat', async (req, res) => {
+//     const userMessage = req.body.message;
+//     console.log('Received message:', userMessage);
+//
+//     if (!userMessage || userMessage.trim() === '') {
+//         return res.json({ reply: 'Please provide a query about wines to compare.' });
+//     }
+//
+//     // Extract wine names from the user message
+//     const [wine1Name, wine2Name] = extractWineNames(userMessage);
+//
+//     console.log('Extracted wine names:', { wine1Name, wine2Name });
+//
+//     if (!wine1Name || !wine2Name) {
+//         return res.json({ reply: 'Please provide two wine names to compare.' });
+//     }
+//
+//     try {
+//         const result = await client.graphql
+//             .get()
+//             .withClassName('WeaviateWines_v40')
+//             .withFields('title description variety country points price winery province region_1 taster_name taster_twitter_handle')
+//             .withNearText({ concepts: [wine1Name, wine2Name] })
+//             .withLimit(2)
+//             .do();
+//
+//         const wines = result.data?.Get?.WeaviateWines_v40;
+//
+//         if (wines && wines.length === 2) {
+//             const [wine1, wine2] = wines;
+//             const comparisonReply = `
+// Comparison of Wines:
+//
+// Wine 1:
+// Wine: ${wine1.title}
+// Winery: ${wine1.winery}
+// Variety: ${wine1.variety}
+// Country: ${wine1.country}
+// Region: ${wine1.region_1 || wine1.province}
+// Rating: ${wine1.points} points
+// Price: $${wine1.price}
+// Description: ${wine1.description}
+// Taster: ${wine1.taster_name} (${wine1.taster_twitter_handle})
+//
+// Wine 2:
+// Wine: ${wine2.title}
+// Winery: ${wine2.winery}
+// Variety: ${wine2.variety}
+// Country: ${wine2.country}
+// Region: ${wine2.region_1 || wine2.province}
+// Rating: ${wine2.points} points
+// Price: $${wine2.price}
+// Description: ${wine2.description}
+// Taster: ${wine2.taster_name} (${wine2.taster_twitter_handle})
+//
+// Analysis:
+// Based on your queries "${wine1.title}" and "${wine2.title}", here is the comparison:
+// - ${wine1.title} from ${wine1.winery} is a ${wine1.variety} from ${wine1.country} with ${wine1.points} points and priced at $${wine1.price}.
+// - ${wine2.title} from ${wine2.winery} is a ${wine2.variety} from ${wine2.country} with ${wine2.points} points and priced at $${wine2.price}.
+// - ${wine1.title} is ${getQualityDescription(wine1.points)} and offers ${getPriceValueDescription(wine1.points, wine1.price)}.
+// - ${wine2.title} is ${getQualityDescription(wine2.points)} and offers ${getPriceValueDescription(wine2.points, wine2.price)}.
+// - The ${wine1.variety} from ${wine1.region_1 || wine1.province} is ${getRegionDescription(wine1.country, wine1.region_1 || wine1.province)}.
+// - The ${wine2.variety} from ${wine2.region_1 || wine2.province} is ${getRegionDescription(wine2.country, wine2.region_1 || wine2.province)}.
+// - ${wine1.title} has ${getHighlights(wine1.description)}, while ${wine2.title} has ${getHighlights(wine2.description)}.
+//
+//             `;
+//             console.log(`Comparison reply: ${comparisonReply}`);
+//             res.json({ reply: comparisonReply });
+//         } else {
+//             console.log('One or both wines not found in Weaviate result.');
+//             res.json({ reply: 'Sorry, I couldn\'t find wines matching your queries for comparison.' });
+//         }
+//     } catch (error) {
+//         console.error('Error:', error);
+//         res.status(500).json({ error: 'Internal Server Error', details: error.message });
+//     }
+// });
+//
+// function extractWineNames(message) {
+//     const regex = /(.*?)\s+or\s+(.*?)(\?|$)/i;
+//     const match = message.match(regex);
+//     if (match) {
+//         return [match[1].trim(), match[2].trim()];
+//     }
+//     return [null, null];
+// }
+//
+// function getQualityDescription(points) {
+//     if (points >= 95) {
+//       return "exceptional quality";
+//     }
+//     if (points >= 90) {
+//       return "outstanding quality";
+//     }
+//     if (points >= 85) {
+//       return "very good quality";
+//     }
+//     if (points >= 80) {
+//       return "good quality";
+//     }
+//     return "average quality";
+// }
+//
+// function getPriceValueDescription(points, price) {
+//     const ratio = points / price;
+//     if (ratio > 1) {
+//       return "excellent value for money";
+//     }
+//     if (ratio > 0.8) {
+//       return "good value for money";
+//     }
+//     return "a premium price for its quality";
+// }
+//
+// function getRegionDescription(country, region) {
+//     const descriptions = {
+//         "France": "producing some of the world's most renowned wines",
+//         "Italy": "offering a diverse range of wine styles",
+//         "Spain": "known for its bold and flavorful wines",
+//         "USA": "producing innovative and high-quality wines",
+//         "Portugal": "famous for its Port wines and emerging table wines",
+//     };
+//     return descriptions[country] || "producing distinctive local wines";
+// }
+//
+// function getHighlights(description) {
+//     const keywords = ["fruity", "tannic", "acidic", "balanced", "oak", "spicy", "floral", "mineral", "rich", "light"];
+//     const found = keywords.filter(word => description.toLowerCase().includes(word));
+//     return found.length > 0 ? found.join(", ") + " notes" : "its unique characteristics";
+// }
+//
+// const PORT = process.env.PORT || 9000;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Version 4
 import express from 'express';
 import cors from 'cors';
 import weaviate from 'weaviate-ts-client';
+import dotenv from 'dotenv';
+import OpenAI from 'openai';
+import res from "express/lib/response.js";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const weaviateApiKey = 'fjmSuapKusq6qLuzbg1xeEo2ucZzh9p7IdEX';
-const openAiApiKey = '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';
+const weaviateApiKey = process.env.WEAVIATE_API_KEY;
+const openAiApiKey = process.env.OPENAI_API_KEY;
 
 const client = weaviate.client({
     scheme: 'https',
@@ -182,21 +348,25 @@ const client = weaviate.client({
     }
 });
 
+const openai = new OpenAI({
+    apiKey: openAiApiKey
+});
+
 app.post('/api/chat', async (req, res) => {
     const userMessage = req.body.message;
     console.log('Received message:', userMessage);
 
     if (!userMessage || userMessage.trim() === '') {
-        return res.json({ reply: 'Please provide a query about wines to compare.' });
+        return res.json({reply: 'Please provide a query about wines to compare.'});
     }
 
     // Extract wine names from the user message
     const [wine1Name, wine2Name] = extractWineNames(userMessage);
 
-    console.log('Extracted wine names:', { wine1Name, wine2Name });
+    console.log('Extracted wine names:', {wine1Name, wine2Name});
 
     if (!wine1Name || !wine2Name) {
-        return res.json({ reply: 'Please provide two wine names to compare.' });
+        return res.json({reply: 'Please provide two wine names to compare.'});
     }
 
     try {
@@ -204,7 +374,7 @@ app.post('/api/chat', async (req, res) => {
             .get()
             .withClassName('WeaviateWines_v40')
             .withFields('title description variety country points price winery province region_1 taster_name taster_twitter_handle')
-            .withNearText({ concepts: [wine1Name, wine2Name] })
+            .withNearText({concepts: [wine1Name, wine2Name]})
             .withLimit(2)
             .do();
 
@@ -212,7 +382,36 @@ app.post('/api/chat', async (req, res) => {
 
         if (wines && wines.length === 2) {
             const [wine1, wine2] = wines;
-            const comparisonReply = `
+            const comparisonReply = generateComparisonReply(wine1, wine2);
+
+            // Generate OpenAI recommendation
+            const openAiRecommendation = await getOpenAiRecommendation(comparisonReply);
+
+            const finalReply = `${comparisonReply}\n\nAI Recommendation:\n${openAiRecommendation}`;
+
+            console.log(`Comparison reply: ${finalReply}`);
+            res.json({reply: finalReply});
+        } else {
+            console.log('One or both wines not found in Weaviate result.');
+            res.json({reply: 'Sorry, I couldn\'t find wines matching your queries for comparison.'});
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({error: 'Internal Server Error', details: error.message});
+    }
+});
+
+function extractWineNames(message) {
+    const regex = /(.*?)\s+or\s+(.*?)(\?|$)/i;
+    const match = message.match(regex);
+    if (match) {
+        return [match[1].trim(), match[2].trim()];
+    }
+    return [null, null];
+}
+
+function generateComparisonReply(wine1, wine2) {
+    return `
 Comparison of Wines:
 
 Wine 1:
@@ -238,7 +437,6 @@ Description: ${wine2.description}
 Taster: ${wine2.taster_name} (${wine2.taster_twitter_handle})
 
 Analysis:
-Based on your queries "${wine1.title}" and "${wine2.title}", here is the comparison:
 - ${wine1.title} from ${wine1.winery} is a ${wine1.variety} from ${wine1.country} with ${wine1.points} points and priced at $${wine1.price}.
 - ${wine2.title} from ${wine2.winery} is a ${wine2.variety} from ${wine2.country} with ${wine2.points} points and priced at $${wine2.price}.
 - ${wine1.title} is ${getQualityDescription(wine1.points)} and offers ${getPriceValueDescription(wine1.points, wine1.price)}.
@@ -246,40 +444,55 @@ Based on your queries "${wine1.title}" and "${wine2.title}", here is the compari
 - The ${wine1.variety} from ${wine1.region_1 || wine1.province} is ${getRegionDescription(wine1.country, wine1.region_1 || wine1.province)}.
 - The ${wine2.variety} from ${wine2.region_1 || wine2.province} is ${getRegionDescription(wine2.country, wine2.region_1 || wine2.province)}.
 - ${wine1.title} has ${getHighlights(wine1.description)}, while ${wine2.title} has ${getHighlights(wine2.description)}.
-            `;
-            console.log(`Comparison reply: ${comparisonReply}`);
-            res.json({ reply: comparisonReply });
-        } else {
-            console.log('One or both wines not found in Weaviate result.');
-            res.json({ reply: 'Sorry, I couldn\'t find wines matching your queries for comparison.' });
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error', details: error.message });
-    }
-});
-
-function extractWineNames(message) {
-    const regex = /(.*?)\s+or\s+(.*?)(\?|$)/i;
-    const match = message.match(regex);
-    if (match) {
-        return [match[1].trim(), match[2].trim()];
-    }
-    return [null, null];
+    `;
 }
 
+async function getOpenAiRecommendation(comparisonReply) {
+    const prompt = `Based on the following wine comparison, provide a recommendation on which wine to choose and why:
+
+${comparisonReply}
+
+Please provide a concise recommendation in 2-3 sentences.`;
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [{role: "user", content: prompt}],
+            max_tokens: 400
+        });
+
+        return response.choices[0].message.content.trim();
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({error: 'Internal Server Error', details: error.message});
+    }
+}
+
+
 function getQualityDescription(points) {
-    if (points >= 95) return "exceptional quality";
-    if (points >= 90) return "outstanding quality";
-    if (points >= 85) return "very good quality";
-    if (points >= 80) return "good quality";
+    if (points >= 95) {
+        return "exceptional quality";
+    }
+    if (points >= 90) {
+        return "outstanding quality";
+    }
+    if (points >= 85) {
+        return "very good quality";
+    }
+    if (points >= 80) {
+        return "good quality";
+    }
     return "average quality";
 }
 
 function getPriceValueDescription(points, price) {
     const ratio = points / price;
-    if (ratio > 1) return "excellent value for money";
-    if (ratio > 0.8) return "good value for money";
+    if (ratio > 1) {
+        return "excellent value for money";
+    }
+    if (ratio > 0.8) {
+        return "good value for money";
+    }
     return "a premium price for its quality";
 }
 
@@ -300,5 +513,5 @@ function getHighlights(description) {
     return found.length > 0 ? found.join(", ") + " notes" : "its unique characteristics";
 }
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 9000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
